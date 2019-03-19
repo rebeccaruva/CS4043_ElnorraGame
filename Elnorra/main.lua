@@ -16,7 +16,7 @@ local bgGroup = display.newGroup()
 local uiGroup = display.newGroup()
 local charGroup = display.newGroup()
 
-charImage = display.newImageRect(charGroup, "char.png", 250, 250)
+charImage = display.newImageRect(charGroup, "Sprites/char.png", 250, 250)
 charImage.x = 0
 charImage.y = 0
 
