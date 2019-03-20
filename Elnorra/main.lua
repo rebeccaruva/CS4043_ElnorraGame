@@ -40,3 +40,23 @@ end
 -- masking images https://docs.coronalabs.com/guide/media/imageMask/index.html
 
 
+-- character movement
+local function onKeyEvent(event)
+  if(event.keyName == "w") then
+    print("w pressed")
+    -- move .y -speed
+  elseif (event.keyName == "a") then
+    print("a pressed")
+    -- move .x -speed
+  elseif (event.keyName == "s") then
+    print("s pressed")
+    -- move .y +speed
+  elseif (event.keyName == "d") then
+    print("d pressed")
+    -- move .x +speed
+  else
+    print("not moving")
+  end
+end
+
+
