@@ -9,25 +9,74 @@
 local charImage
 local bgImage
 local healthScore = 100
+local print = "Game Over"
 
 --set up display groups
 local bgGroup = display.newGroup()
 local uiGroup = display.newGroup()
 local charGroup = display.newGroup()
+local healthBar = display.newImageRect( "health_bar.png",healthScore*2,50 )
+healthBar.x = display.contentCenterX-720
+healthBar.y = display.contentCenterY-535
 local healthText = display.newText( healthScore, -200, 100, native.systemFont, 60)
 
 charImage = display.newImageRect(charGroup, "Sprites/char.png", 50, 50)
 charImage.x = 500
 charImage.y = 500
 
+----------------------
+-----
+-- health functions
+-----
+----------------------
+
 local function addHealth()
-  healthScore = healthScore +10
-  healthText.text = healthScore
+  if ( healthScore < 100) then
+    healthScore = healthScore +10
+    display.remove( healthBar )       --to remove the previous length of the health bar
+    healthBar = display.newImageRect( "health_bar.png",healthScore*2,50 )   --new length of the health bar (according to the sanity level)
+    healthBar.x = display.contentCenterX-720
+    healthBar.y = display.contentCenterY-535
+    healthText.text = healthScore
+  end
 end
 
 local function minusHealth()
-  healthScore = healthScore -10
-  healthText.text = healthScore
+  if ( healthScore >0) then
+    healthScore = healthScore -10
+    display.remove( healthBar )       --to remove the previous length of the health bar
+    healthBar = display.newImageRect( "health_bar.png",healthScore*2,50 )   --new length of the health bar (according to the sanity level)
+    healthBar.x = display.contentCenterX-720
+    healthBar.y = display.contentCenterY-535
+    healthText.text = healthScore
+  end
+  if ( healthScore ==0) then --no sanity left, game over
+    display.remove( healthText ) --remove the text saying the sanity/ health level
+    local printText = display.newText( print, 350, 650, native.systemFont, 200) --prints "Game Over"
+    --stops the game and goes back to the menu
+    --to add -------------------------------------------------------------------------------------
+  end
+end
+
+----------------------
+-----
+-- change worlds
+-----
+----------------------
+
+local function changeWorld()
+  --if (backgroundBad is displayed)
+    --display.remove( backgroundBad )
+    --backgroundGood = display.newImageRect( "bgGood.png", size, size)
+    --backgroundGood.x = display.contentCenterX
+    --backgroundGood.y = display.contentCenterY
+  --end
+  --if (backgroundGood is displayed)
+    --display.remove( backgroundGood )
+    --backgroundBad = display.newImageRect( "bgBad.png", size, size)
+    --backgroundBad.x = display.contentCenterX
+    --backgroundBad.y = display.contentCenterY
+  --end
 end
 
 -- remove display objects: https://docs.coronalabs.com/guide/media/displayObjects/index.html#removing-display-objects
