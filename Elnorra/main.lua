@@ -10,6 +10,12 @@ local charImage
 local bgImage
 local healthScore = 100
 
+local composer = require( "composer" )
+
+-- Hide status bar
+display.setStatusBar( display.HiddenStatusBar )
+composer.gotoScene( "menu" )
+
 --set up display groups
 local bgGroup = display.newGroup()
 local uiGroup = display.newGroup()
