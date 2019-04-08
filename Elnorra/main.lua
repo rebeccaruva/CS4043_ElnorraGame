@@ -11,6 +11,12 @@ local bgImage
 local healthScore = 100
 local print = "Game Over"
 
+local composer = require( "composer" )
+
+-- Hide status bar
+display.setStatusBar( display.HiddenStatusBar )
+composer.gotoScene( "menu" )
+
 --set up display groups
 local bgGroup = display.newGroup()
 local uiGroup = display.newGroup()
@@ -87,7 +93,8 @@ end
 -- character movement
 -----
 ----------------------
--- direction ad speed variables
+
+-- direction and speed variables
 local dir = 0 --n8 is up, 4 is left, 2 is down, 6 is right ( like numpad )
 local speed = 2 -- can be changed in other parts of code if needed
 
