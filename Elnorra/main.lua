@@ -173,7 +173,11 @@ end
 Runtime:addEventListener( "key", onKeyEvent)
 
 
-
+--------------------------
+-----
+--	Enemy creation
+-----
+--------------------------
 
 local physics = require ("physics")
 physics.start()
@@ -185,9 +189,16 @@ charImage.isFixedRotation = true
 charImage.myName = "player"
 	
 Enemies = {}
+
+-- createEnemy
+-- patrol can be set to square, linex or liney
+-- pathx is x distance of patrol
+-- pathy is y distance of patrol
+-- path counter sets what point to start patrol at
+-- if patrol is set it sets which corner to start the square or the line from
 	
 function createEnemy( x, y, speed, health, damage, patrol, pathx, pathy, pathCounter )
-	local newEnemy =  display.newImageRect(charGroup, "Sprites/char.png", x, y)
+	local newEnemy =  display.newImageRect(charGroup, "Sprites/char.png", 50, 50)
 	physics.addBody( newEnemy, "dynamic",{ density = 1000 ,bounce = 0})
 	newEnemy.isFixedRotation = true
 	newEnemy.x = x
@@ -204,9 +215,14 @@ function createEnemy( x, y, speed, health, damage, patrol, pathx, pathy, pathCou
 	newEnemy.pathy = pathy
 	Enemies[#Enemies + 1] = newEnemy
 end
-		
-Enemy1 = createEnemy( 400, 200, 30, 50, 20, "liney", 100, 100, 1 )
-	--transition.to(EnemiesF[1],{ time = 4000, rotation = 90 } )  
+
+createEnemy( 200, 200, 20, 50, 50, "liney", 50, 50, 1)
+	
+----------------------------
+-----
+--	Enemy pathSet and Follow
+-----
+----------------------------
 	
 function checkDirection( direction, speed )
 	if math.abs(direction) > speed then
@@ -219,16 +235,19 @@ function checkDirection( direction, speed )
     return direction
 end
 		
+--lookForPlayer checks player distance and if it is within a set amount then enemy moves toward player in x direction then y
+--else it can follow a set path if we set one
+-- also if player gets out of range the enemy will return to its path
 
 function lookForPlayer()		
 	for i = 1 , #Enemies do
-		print(math.abs(charImage.x - Enemies[i].x) + math.abs(charImage.y - Enemies[i].y))
 		if math.abs(charImage.x - Enemies[i].x) + math.abs(charImage.y - Enemies[i].y) < 800 then 
 			if math.abs(charImage.x - Enemies[i].x) > 20  then
 				transition.to( Enemies[i], { x = Enemies[i].x + checkDirection(charImage.x - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
 			elseif math.abs(charImage.y - Enemies[i].y) > 20  then
 				transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(charImage.y - Enemies[i].y , Enemies[i].speed) , time = 250 })
 			end
+			
 		else
 			if Enemies[i].patrol == "square" then
 				if Enemies[i].pathCounter == 1 then
@@ -270,7 +289,7 @@ function lookForPlayer()
 					if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
 						transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
 					elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
-						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies.starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
 					else
 						Enemies[i].pathCounter = 2
 					end
@@ -278,7 +297,7 @@ function lookForPlayer()
 					if math.abs(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x) > 0  then
 						transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
 					elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
-						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies.starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
 					else
 						Enemies[i].pathCounter = 1
 					end
@@ -307,9 +326,10 @@ function lookForPlayer()
 	
 	timer.performWithDelay( 250 , function() lookForPlayer() end )
 end
+
 timer.performWithDelay( 3000 , function() lookForPlayer() end )
 
-
+--basic collision function
 	
 function enemyCollisions( event )
 	if ( event.phase == "began" ) then
