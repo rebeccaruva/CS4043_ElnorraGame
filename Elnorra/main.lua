@@ -30,7 +30,7 @@
 local charImage
 local bgImage
 local healthScore = 100
-local print = "Game Over"
+local gameOver = "Game Over"
 
 local composer = require( "composer" )
 
@@ -68,18 +68,18 @@ local function addHealth()
   end
 end
 
-local function minusHealth()
+local function minusHealth( damage )
   if ( healthScore >0) then
-    healthScore = healthScore -10
+    healthScore = healthScore - damage
     display.remove( healthBar )       --to remove the previous length of the health bar
     healthBar = display.newImageRect( "health_bar.png",healthScore*2,50 )   --new length of the health bar (according to the sanity level)
     healthBar.x = display.contentCenterX-720
     healthBar.y = display.contentCenterY-535
     healthText.text = healthScore
   end
-  if ( healthScore ==0) then --no sanity left, game over
+  if ( healthScore <= 0) then --no sanity left, game over
     display.remove( healthText ) --remove the text saying the sanity/ health level
-    local printText = display.newText( print, 350, 650, native.systemFont, 200) --prints "Game Over"
+    local printText = display.newText( gameOver, 350, 650, native.systemFont, 200) --prints "Game Over"
     --stops the game and goes back to the menu
     --to add -------------------------------------------------------------------------------------
   end
@@ -122,13 +122,13 @@ local speed = 2 -- can be changed in other parts of code if needed
 -- every frame move (or dont move) the character depending on dir
 local function moveChar()
   if(dir == 8) then
-    charImage.y = charImage.y - 1
+    charImage.y = charImage.y - 4
   elseif(dir == 4) then
-    charImage.x = charImage.x - 1
+    charImage.x = charImage.x - 4
   elseif (dir == 2) then
-    charImage.y = charImage.y + 1
+    charImage.y = charImage.y + 4
   elseif(dir == 6) then
-    charImage.x = charImage.x + 1
+    charImage.x = charImage.x + 4
   end
 end
 
@@ -182,34 +182,30 @@ physics.setGravity( 0,0)
 	
 physics.addBody( charImage, "dynamic")
 charImage.isFixedRotation = true
-charImage:setLinearVelocity( 5, 0 )
+charImage.myName = "player"
 	
 Enemies = {}
 	
-function createFastEnemy( x, y )
+function createEnemy( x, y, speed, health, damage, patrol, pathx, pathy, pathCounter )
 	local newEnemy =  display.newImageRect(charGroup, "Sprites/char.png", x, y)
 	physics.addBody( newEnemy, "dynamic",{ density = 1000 ,bounce = 0})
 	newEnemy.isFixedRotation = true
 	newEnemy.x = x
 	newEnemy.y = y
-	newEnemy.myName = "FastEnemy"
-	newEnemy.speed = 30
-	newEnemy.health = 50
+	newEnemy.myName = "Enemy"
+	newEnemy.speed = speed
+	newEnemy.health = health
+	newEnemy.damage = damage
+	newEnemy.patrol = patrol
+	newEnemy.pathCounter = pathCounter
+	newEnemy.startx = x
+	newEnemy.starty = y
+	newEnemy.pathx = pathx
+	newEnemy.pathy = pathy
 	Enemies[#Enemies + 1] = newEnemy
 end
 		
-function createSlowEnemy( x, y )
-	local newEnemy =  display.newImageRect(charGroup, "Sprites/char.png", x, y)
-	physics.addBody( newEnemy, "dynamic",{ density = 1000 ,bounce = 0})
-	newEnemy.isFixedRotation = true
-	newEnemy.x = x
-	newEnemy.y = y
-	newEnemy.myName = "SlowEnemy"
-	newEnemy.speed = 15
-	newEnemy.health = 100
-	Enemies[#Enemies + 1] = newEnemy
-end
-Enemy1 = createFastEnemy( 400, 200 )
+Enemy1 = createEnemy( 400, 200, 30, 50, 20, "liney", 100, 100, 1 )
 	--transition.to(EnemiesF[1],{ time = 4000, rotation = 90 } )  
 	
 function checkDirection( direction, speed )
@@ -223,53 +219,108 @@ function checkDirection( direction, speed )
     return direction
 end
 		
-	
+
 function lookForPlayer()		
 	for i = 1 , #Enemies do
+		print(math.abs(charImage.x - Enemies[i].x) + math.abs(charImage.y - Enemies[i].y))
 		if math.abs(charImage.x - Enemies[i].x) + math.abs(charImage.y - Enemies[i].y) < 800 then 
-			if math.abs(charImage.x - Enemies[i].x) < 20  then
-				transition.to( Enemies[i], { x = Enemies[i].x + checkDirection(charImage.x - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 1000 }) 
-			elseif math.abs(charImage.y - Enemies[i].y) < 20  then
-				transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(charImage.y - Enemies[i].y , Enemies[i].speed) , time = 1000 })
+			if math.abs(charImage.x - Enemies[i].x) > 20  then
+				transition.to( Enemies[i], { x = Enemies[i].x + checkDirection(charImage.x - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+			elseif math.abs(charImage.y - Enemies[i].y) > 20  then
+				transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(charImage.y - Enemies[i].y , Enemies[i].speed) , time = 250 })
+			end
+		else
+			if Enemies[i].patrol == "square" then
+				if Enemies[i].pathCounter == 1 then
+					if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
+						transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+					elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+					else
+						Enemies[i].pathCounter = 2
+					end
+				elseif Enemies[i].pathCounter == 2 then
+					if math.abs(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x) > 0  then
+						transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+					elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+					else
+						Enemies[i].pathCounter = 3
+					end
+				
+				elseif Enemies[i].pathCounter == 3 then
+					if math.abs(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x) > 0  then
+						transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+					elseif math.abs(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y) > 0  then
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y , Enemies[i].speed) , time = 250 })
+					else
+						Enemies[i].pathCounter = 4
+					end
+				else
+					if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
+						transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+					elseif math.abs(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y) > 0  then
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y , Enemies[i].speed) , time = 250 })
+					else
+						Enemies[i].pathCounter = 1
+					end
+				end
+			elseif Enemies[i].patrol == "linex" then
+				if Enemies[i].pathCounter == 1 then
+					if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
+						transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+					elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies.starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+					else
+						Enemies[i].pathCounter = 2
+					end
+				else
+					if math.abs(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x) > 0  then
+						transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+					elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies.starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+					else
+						Enemies[i].pathCounter = 1
+					end
+				end
+			elseif Enemies[i].patrol == "liney" then
+				if Enemies[i].pathCounter == 1 then
+					if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
+						transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+					elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+					else
+						Enemies[i].pathCounter = 2
+					end
+				else
+					if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
+						transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+					elseif math.abs(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y) > 0  then
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y , Enemies[i].speed) , time = 250 })
+					else
+						Enemies[i].pathCounter = 1
+					end
+				end
 			end
 		end
 	end
 	
-	timer.performWithDelay( 5000 , function() lookForPlayer() end )
+	timer.performWithDelay( 250 , function() lookForPlayer() end )
 end
-timer.performWithDelay( 5000 , function() lookForPlayer() end )
+timer.performWithDelay( 3000 , function() lookForPlayer() end )
 
 
 	
 function enemyCollisions( event )
-	print(event.phase)
 	if ( event.phase == "began" ) then
 	
 		local obj1 = event.object1
 		local obj2 = event.object2
-		print(obj1.myName)
-		if( obj1.myName == "player" and obj2.myName == "FastEnemy") or
-		  ( obj1.myName == "FastEnemy" and obj2.myName == "player")
-		then 
-			minusHealth()
-				
-		elseif ( obj1.myName == "player" and obj2.myName == "SlowEnemy") or
-			 ( obj1.myName == "SlowEnemy" and obj2.myName == "player")
-		then
-			minusHealth() 
-	 	end
-			  	
-			 --else if ( obj1.myName == "wall" and obj2.myName == "Enemy") or
-			 --		 ( obj1.myName == "Enemy" and obj2.myName == "wall") 
-			 --then 
-			 --
-			 --		
-			 --
-			 --else if ( obj1.myName = "boundary" and obj2.myName == "Enemy) or
-			 --  	     (obj1.myName = "Enemy" and obj2.myName = "boundary")
-			 --then
-			 --
-			 --
+		if( obj1.myName == "player" and obj2.myName == "Enemy") then
+			minusHealth(obj2.damage)
+		elseif ( obj1.myName == "Enemy" and obj2.myName == "player") then
+			minusHealth(obj1.damage)
+		end
 	end
 end
 	
