@@ -345,3 +345,4 @@ function enemyCollisions( event )
 end
 	
 	Runtime:addEventListener( "collision", enemyCollisions )
+
