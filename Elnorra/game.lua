@@ -52,15 +52,32 @@ function scene:show( event )
         charImage.y = 500
 
         local function addHealth()
-          healthScore = healthScore +10
-          healthText.text = healthScore
-        end
-
-
-        local function minusHealth()
-          healthScore = healthScore -10
-          healthText.text = healthScore
-        end
+		  if ( healthScore < 100) then
+		    healthScore = healthScore +10
+		    display.remove( healthBar )       --to remove the previous length of the health bar
+		    healthBar = display.newImageRect( "health_bar.png",healthScore*2,50 )   --new length of the health bar (according to the sanity level)
+		    healthBar.x = display.contentCenterX-720
+		    healthBar.y = display.contentCenterY-535
+		    healthText.text = healthScore
+		  end
+		end
+		
+		local function minusHealth( damage )
+		  if ( healthScore >0) then
+		    healthScore = healthScore - damage
+		    display.remove( healthBar )       --to remove the previous length of the health bar
+		    healthBar = display.newImageRect( "health_bar.png",healthScore*2,50 )   --new length of the health bar (according to the sanity level)
+		    healthBar.x = display.contentCenterX-720
+		    healthBar.y = display.contentCenterY-535
+		    healthText.text = healthScore
+		  end
+		  if ( healthScore <= 0) then --no sanity left, game over
+		    display.remove( healthText ) --remove the text saying the sanity/ health level
+		    local printText = display.newText( gameOver, 350, 650, native.systemFont, 200) --prints "Game Over"
+		    --stops the game and goes back to the menu
+		    --to add -------------------------------------------------------------------------------------
+		  end
+		end
 
         -- remove display objects: https://docs.coronalabs.com/guide/media/displayObjects/index.html#removing-display-objects
         -- masking images https://docs.coronalabs.com/guide/media/imageMask/index.html
