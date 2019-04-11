@@ -1,0 +1,380 @@
+local composer = require( "composer" )
+
+local scene = composer.newScene()
+
+-- -----------------------------------------------------------------------------------
+-- Code outside of the scene event functions below will only be executed ONCE unless
+-- the scene is removed entirely (not recycled) via "composer.removeScene()"
+-- -----------------------------------------------------------------------------------
+
+local function goToMenu()
+ composer.gotoScene( "menu")
+end
+
+-- initialize variables
+local charImage
+local bgImage
+local healthScore = 100
+
+-- -----------------------------------------------------------------------------------
+-- Scene event functions
+-- -----------------------------------------------------------------------------------
+
+-- create()
+function scene:create( event )
+
+    local sceneGroup = self.view
+    -- Code here runs when the scene is first created but has not yet appeared on screen
+
+end
+
+
+-- show()
+function scene:show( event )
+
+    local sceneGroup = self.view
+    local phase = event.phase
+
+    if ( phase == "will" ) then
+        -- Code here runs when the scene is still off screen (but is about to come on screen)
+
+        local backButton = display.newImage(sceneGroup, "Left-Arrow.png" )
+    		backButton.x = display.contentCenterX - 950
+    		backButton.y = display.contentHeight - 1150
+
+        local menu_tap_to_play = display.newText(sceneGroup, "INSERT GAME", display.contentCenterX, display.contentHeight - 600, "Arial", 200)
+
+        --set up display groups
+        local healthText = display.newText(sceneGroup, healthScore, -200, 100, native.systemFont, 60)
+
+        charImage = display.newImageRect(sceneGroup, "Sprites/char.png", 50, 50)
+        charImage.x = 500
+        charImage.y = 500
+
+        function addHealth()
+          healthScore = healthScore +10
+          healthText.text = healthScore
+        end
+
+        function minusHealth()
+          healthScore = healthScore - 10
+          healthText.text = healthScore
+        end
+
+        -- remove display objects: https://docs.coronalabs.com/guide/media/displayObjects/index.html#removing-display-objects
+        -- masking images https://docs.coronalabs.com/guide/media/imageMask/index.html
+
+        ----------------------
+        -----
+        -- character movement
+        -----
+        ----------------------
+        -- direction ad speed variables
+        local dir = 0 --n8 is up, 4 is left, 2 is down, 6 is right ( like numpad )
+        local speed = 2 -- can be changed in other parts of code if needed
+
+        -- every frame move (or dont move) the character depending on dir
+        local function moveChar()
+          if(dir == 8) then
+            charImage.y = charImage.y - 1
+          elseif(dir == 4) then
+            charImage.x = charImage.x - 1
+          elseif (dir == 2) then
+            charImage.y = charImage.y + 1
+          elseif(dir == 6) then
+            charImage.x = charImage.x + 1
+          end
+        end
+
+        -- run every fps interval
+        Runtime:addEventListener( "enterFrame", moveChar)
+
+        -- on key inputs do whats in this function
+        local function onKeyEvent(event)
+          -- check if button is pressed in general
+          if (event.phase == "down") then
+            buttonPressed = true;
+          elseif (event.phase == "up") then
+            buttonPressed = false;
+          end
+
+          -- if no buttons are pressed then stop moving
+          if(buttonPressed == false) then
+            dir = 0
+          end
+
+          -- each button move the player either up/down or left/right
+          if((event.keyName == "w") or (event.keyName == "up")) then
+            if(buttonPressed == true) then
+              dir = 8
+            end
+          elseif((event.keyName == "a") or (event.keyName == "left")) then
+            if(buttonPressed == true) then
+              dir = 4
+            end
+          elseif ((event.keyName == "s") or (event.keyName == "down")) then
+            if(buttonPressed == true) then
+              dir = 2
+            end
+          elseif ((event.keyName == "d") or (event.keyName == "right")) then
+            if(buttonPressed == true) then
+              dir = 6
+            end
+          end
+        end
+
+        -- listen for key input from user
+        Runtime:addEventListener( "key", onKeyEvent)
+
+
+        backButton:addEventListener( "tap", goToMenu )
+        
+		--------------------------
+		-----
+		--	Enemy creation
+		-----
+		--------------------------
+		
+		local physics = require ("physics")
+		physics.start()
+		physics.setDrawMode("hybrid")
+		physics.setGravity( 0,0)
+			
+		physics.addBody( charImage, "dynamic")
+		charImage.isFixedRotation = true
+		charImage.myName = "player"
+			
+		-- createEnemy
+		-- patrol can be set to square, linex or liney
+		-- pathx is x distance of patrol
+		-- pathy is y distance of patrol
+		-- path counter sets what point to start patrol at
+		-- if patrol is set it sets which corner to start the square or the line from
+		-- if follow equals true then ai follows player or it will keep to the path it is given
+        Enemies = {}
+
+		function createEnemy( x, y, speed, health, damage, follow, patrol, pathx, pathy, pathCounter )
+			local newEnemy =  display.newImageRect(sceneGroup, "Sprites/char.png", 50, 50)
+			physics.addBody( newEnemy, "dynamic",{ density = 1000 ,bounce = 0})
+			newEnemy.isFixedRotation = true
+			newEnemy.x = x
+			newEnemy.y = y
+			newEnemy.myName = "Enemy"
+			newEnemy.speed = speed
+			newEnemy.health = health
+			newEnemy.damage = damage
+			newEnemy.follow = follow
+			newEnemy.patrol = patrol
+			newEnemy.pathCounter = pathCounter
+			newEnemy.startx = x
+			newEnemy.starty = y
+			newEnemy.pathx = pathx
+			newEnemy.pathy = pathy
+			Enemies[#Enemies + 1] = newEnemy
+		end
+		
+		createEnemy( 200, 200, 20, 50, 50, true, "square", 50, 50, 1)
+
+    elseif ( phase == "did" ) then
+        -- Code here runs when the scene is entirely on screen
+        ----------------------------
+		----------------------------
+		-----
+		--	Enemy pathSet and Follow
+		-----
+		----------------------------
+			
+		function checkDirection( direction, speed )
+			if math.abs(direction) > speed then
+				if direction < 0 then
+					return -speed
+				else
+					return speed
+				end
+			end
+		    return direction
+		end
+				
+		--lookForPlayer checks player distance and if it is within a set amount then enemy moves toward player in x direction then y
+		--else it can follow a set path if we set one
+		-- also if player gets out of range the enemy will return to its path
+		
+		function setPath(i)
+			if Enemies[i].patrol == "square" then
+						if Enemies[i].pathCounter == 1 then
+							if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
+								transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+							elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
+								transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+							else
+								Enemies[i].pathCounter = 2
+							end
+						elseif Enemies[i].pathCounter == 2 then
+							if math.abs(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x) > 0  then
+								transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+							elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
+								transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+							else
+								Enemies[i].pathCounter = 3
+							end
+						
+						elseif Enemies[i].pathCounter == 3 then
+							if math.abs(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x) > 0  then
+								transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+							elseif math.abs(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y) > 0  then
+								transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y , Enemies[i].speed) , time = 250 })
+							else
+								Enemies[i].pathCounter = 4
+							end
+						else
+							if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
+								transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+							elseif math.abs(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y) > 0  then
+								transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y , Enemies[i].speed) , time = 250 })
+							else
+								Enemies[i].pathCounter = 1
+							end
+						end
+					elseif Enemies[i].patrol == "linex" then
+						if Enemies[i].pathCounter == 1 then
+							if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
+								transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+							elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
+								transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+							else
+								Enemies[i].pathCounter = 2
+							end
+						else
+							if math.abs(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x) > 0  then
+								transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx + Enemies[i].pathx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+							elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
+								transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+							else
+								Enemies[i].pathCounter = 1
+							end
+						end
+					elseif Enemies[i].patrol == "liney" then
+						if Enemies[i].pathCounter == 1 then
+							if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
+								transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+							elseif math.abs(Enemies[i].starty - Enemies[i].y) > 0  then
+								transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty - Enemies[i].y , Enemies[i].speed) , time = 250 })
+							else
+								Enemies[i].pathCounter = 2
+							end
+						else
+							if math.abs(Enemies[i].startx - Enemies[i].x) > 0  then
+								transition.to( Enemies[i],{ x = Enemies[i].x + checkDirection(Enemies[i].startx - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+							elseif math.abs(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y) > 0  then
+								transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(Enemies[i].starty + Enemies[i].pathy - Enemies[i].y , Enemies[i].speed) , time = 250 })
+							else
+								Enemies[i].pathCounter = 1
+							end
+						end
+					end
+		end
+		
+		function lookForPlayer()		
+			for i = 1 , #Enemies do
+				if math.abs(charImage.x - Enemies[i].x) + math.abs(charImage.y - Enemies[i].y) < 800 and Enemies[i].follow == true then 
+					if math.abs(charImage.x - Enemies[i].x) > 20  then
+						transition.to( Enemies[i], { x = Enemies[i].x + checkDirection(charImage.x - Enemies[i].x , Enemies[i].speed) , y = Enemies[i].y , time = 250 }) 
+					elseif math.abs(charImage.y - Enemies[i].y) > 20  then
+						transition.to( Enemies[i], { x = Enemies[i].x , y = Enemies[i].y + checkDirection(charImage.y - Enemies[i].y , Enemies[i].speed) , time = 250 })
+					end
+					
+				else
+					setPath(i)
+				end
+			end
+			
+			timer.performWithDelay( 250 , function() lookForPlayer() end )
+		end
+		timer.performWithDelay( 3000 , function() lookForPlayer() end )
+		
+		function knockback( self, other )
+			transition.cancel(other)
+			if other.x < self.x then
+				if other.y < self.y then
+					transition.to( self, {time=250,x=self.x + 100, y=self.y + 100})
+					timer.performWithDelay(1000, other )
+				elseif other.y > self.y then
+					transition.to( self, {time=250,x=self.x + 100, y=self.y - 100})
+					timer.performWithDelay(1000, other )
+				end
+			elseif other.x > self.x then
+				if other.y < self.y then
+					transition.to( self, {time=250,x=self.x - 100, y=self.y + 100})
+					timer.performWithDelay(1000, other )
+				elseif other.y > self.y then
+					transition.to( self, {time=250,x=self.x - 100, y=self.y - 100})
+					timer.performWithDelay(1000, other )
+				end
+			else
+				if other.y < self.y then
+					transition.to( self, {time=250,x=self.x, y=self.y + 100})
+					timer.performWithDelay(1000, other )
+				elseif other.y > self.y then
+					transition.to( self, {time=250,x=self.x, y=self.y - 100})
+					timer.performWithDelay(1000, other )
+				end
+			end
+		end
+		
+		--basic collision function
+			
+		function enemyCollisions( event )
+			if ( event.phase == "began" ) then
+			
+				local obj1 = event.object1
+				local obj2 = event.object2
+				if( obj1.myName == "player" and obj2.myName == "Enemy") then
+					minusHealth(obj2.damage)
+					knockback( obj1, obj2 )
+				elseif ( obj1.myName == "player" and obj2.myName == "hero") then
+					minusHealth(obj1.damage)
+					knockback( obj2, obj1 )
+				end
+			end
+		end
+			
+		Runtime:addEventListener( "collision", enemyCollisions )
+    end
+end
+
+
+-- hide()
+function scene:hide( event )
+
+    local sceneGroup = self.view
+    local phase = event.phase
+
+    if ( phase == "will" ) then
+        -- Code here runs when the scene is on screen (but is about to go off screen)
+
+    elseif ( phase == "did" ) then
+        -- Code here runs immediately after the scene goes entirely off screen
+
+    end
+end
+
+
+-- destroy()
+function scene:destroy( event )
+
+    local sceneGroup = self.view
+    -- Code here runs prior to the removal of scene's view
+
+end
+
+
+-- -----------------------------------------------------------------------------------
+-- Scene event function listeners
+-- -----------------------------------------------------------------------------------
+scene:addEventListener( "create", scene )
+scene:addEventListener( "show", scene )
+scene:addEventListener( "hide", scene )
+scene:addEventListener( "destroy", scene )
+-- -----------------------------------------------------------------------------------
+
+return scene
