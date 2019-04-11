@@ -51,13 +51,14 @@ function scene:show( event )
         charImage.x = 500
         charImage.y = 500
 
-        function addHealth()
+        local function addHealth()
           healthScore = healthScore +10
           healthText.text = healthScore
         end
 
-        function minusHealth()
-          healthScore = healthScore - 10
+
+        local function minusHealth()
+          healthScore = healthScore -10
           healthText.text = healthScore
         end
 
@@ -339,6 +340,10 @@ function scene:show( event )
 		end
 			
 		Runtime:addEventListener( "collision", enemyCollisions )
+
+    elseif ( phase == "did" ) then
+        -- Code here runs when the scene is entirely on screen
+
     end
 end
 
