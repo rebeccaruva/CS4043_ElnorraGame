@@ -15,7 +15,7 @@ end
 local charImage
 local bgImage
 local healthScore = 100
-
+local gameOver = "Game Over"
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -44,14 +44,40 @@ function scene:show( event )
 
         local menu_tap_to_play = display.newText(sceneGroup, "INSERT GAME", display.contentCenterX, display.contentHeight - 600, "Arial", 200)
 
-        --set up display groups
-        local healthText = display.newText(sceneGroup, healthScore, -200, 100, native.systemFont, 60)
+        backButton:addEventListener( "tap", goToMenu )
+        
+         -- Set up display groups
 
+        local backGroup = display.newGroup()  -- Display group for the background image
+        local charGroup = display.newGroup()  -- Display group for the hero, ennemys, weapon held, etc.
+        local uiGroup = display.newGroup()
+        
+        --initialize variables
+        local healthBar = display.newImageRect( "health_bar.png",healthScore*2,50 )
+        healthBar.x = display.contentCenterX-720
+        healthBar.y = display.contentCenterY-535
+        local healthText = display.newText( sceneGroup,  healthScore, -200, 100, native.systemFont, 60)
+        
+        local physics = require ("physics")
+        physics.start()
+        physics.setDrawMode("hybrid")
+        physics.setGravity( 0,0)
+        
         charImage = display.newImageRect(sceneGroup, "Sprites/char.png", 50, 50)
         charImage.x = 500
         charImage.y = 500
+        physics.addBody( charImage, "dynamic")
+        charImage.isFixedRotation = true
+        charImage.myName = "player"
+        
+        Enemies = {}
 
-        local function addHealth()
+----------------------
+-----
+-- health functions
+-----
+----------------------
+    local function addHealth()
 		  if ( healthScore < 100) then
 		    healthScore = healthScore +10
 		    display.remove( healthBar )       --to remove the previous length of the health bar
@@ -94,13 +120,13 @@ function scene:show( event )
         -- every frame move (or dont move) the character depending on dir
         local function moveChar()
           if(dir == 8) then
-            charImage.y = charImage.y - 1
+            charImage.y = charImage.y - 4
           elseif(dir == 4) then
-            charImage.x = charImage.x - 1
+            charImage.x = charImage.x - 4
           elseif (dir == 2) then
-            charImage.y = charImage.y + 1
+            charImage.y = charImage.y + 4
           elseif(dir == 6) then
-            charImage.x = charImage.x + 1
+            charImage.x = charImage.x + 4
           end
         end
 
@@ -143,9 +169,6 @@ function scene:show( event )
 
         -- listen for key input from user
         Runtime:addEventListener( "key", onKeyEvent)
-
-
-        backButton:addEventListener( "tap", goToMenu )
         
 		--------------------------
 		-----
@@ -153,15 +176,6 @@ function scene:show( event )
 		-----
 		--------------------------
 		
-		local physics = require ("physics")
-		physics.start()
-		physics.setDrawMode("hybrid")
-		physics.setGravity( 0,0)
-			
-		physics.addBody( charImage, "dynamic")
-		charImage.isFixedRotation = true
-		charImage.myName = "player"
-			
 		-- createEnemy
 		-- patrol can be set to square, linex or liney
 		-- pathx is x distance of patrol
@@ -169,7 +183,6 @@ function scene:show( event )
 		-- path counter sets what point to start patrol at
 		-- if patrol is set it sets which corner to start the square or the line from
 		-- if follow equals true then ai follows player or it will keep to the path it is given
-        Enemies = {}
 
 		function createEnemy( x, y, speed, health, damage, follow, patrol, pathx, pathy, pathCounter )
 			local newEnemy =  display.newImageRect(sceneGroup, "Sprites/char.png", 50, 50)
@@ -192,15 +205,11 @@ function scene:show( event )
 		end
 		
 		createEnemy( 200, 200, 20, 50, 50, true, "square", 50, 50, 1)
-
-    elseif ( phase == "did" ) then
-        -- Code here runs when the scene is entirely on screen
-        ----------------------------
-		----------------------------
-		-----
-		--	Enemy pathSet and Follow
-		-----
-		----------------------------
+----------------------------
+-------
+--	Enemy pathSet and Follow
+-------
+----------------------------
 			
 		function checkDirection( direction, speed )
 			if math.abs(direction) > speed then
@@ -357,6 +366,8 @@ function scene:show( event )
 		end
 			
 		Runtime:addEventListener( "collision", enemyCollisions )
+		
+		
 
     elseif ( phase == "did" ) then
         -- Code here runs when the scene is entirely on screen
