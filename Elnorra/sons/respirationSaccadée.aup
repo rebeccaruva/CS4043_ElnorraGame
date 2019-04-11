@@ -1,0 +1,30 @@
+<?xml version="1.0" standalone="no" ?>
+<!DOCTYPE project PUBLIC "-//audacityproject-1.3.0//DTD//EN" "http://audacity.sourceforge.net/xml/audacityproject-1.3.0.dtd" >
+<project xmlns="http://audacity.sourceforge.net/xml/" projname="respirationSaccadée_data" version="1.3.0" audacityversion="2.3.1" sel0="0.0000000000" sel1="0.0000000000" vpos="0" h="0.0000000000" zoom="53.7005005242" rate="44100.0" snapto="off" selectionformat="hh:mm:ss + milliseconds" frequencyformat="Hz" bandwidthformat="octaves">
+	<tags/>
+	<wavetrack name="Piste audio" channel="2" linked="0" mute="0" solo="0" height="933" minimized="0" isSelected="1" rate="44100" gain="1.0" pan="0.0" colorindex="0">
+		<waveclip offset="0.00000000" colorindex="0">
+			<sequence maxsamples="262144" sampleformat="262159" numsamples="1353126">
+				<waveblock start="0">
+					<simpleblockfile filename="e0808da9.au" len="179775" min="-0.002605" max="0.002785" rms="0.000256"/>
+				</waveblock>
+				<waveblock start="179775">
+					<simpleblockfile filename="e080895c.au" len="262144" min="-0.003643" max="0.003696" rms="0.000396"/>
+				</waveblock>
+				<waveblock start="441919">
+					<simpleblockfile filename="e08087ad.au" len="262144" min="-0.002835" max="0.002351" rms="0.000234"/>
+				</waveblock>
+				<waveblock start="704063">
+					<simpleblockfile filename="e080859a.au" len="262144" min="-0.00392" max="0.004022" rms="0.000418"/>
+				</waveblock>
+				<waveblock start="966207">
+					<simpleblockfile filename="e0808e55.au" len="262144" min="-0.00405" max="0.004835" rms="0.000362"/>
+				</waveblock>
+				<waveblock start="1228351">
+					<simpleblockfile filename="e0808bed.au" len="124775" min="-0.002111" max="0.002035" rms="0.000209"/>
+				</waveblock>
+			</sequence>
+			<envelope numpoints="0"/>
+		</waveclip>
+	</wavetrack>
+</project>
