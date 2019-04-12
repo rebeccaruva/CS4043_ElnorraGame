@@ -370,26 +370,20 @@ attack = false
 			if other.x < self.x then
 				if other.y < self.y then
 					transition.to( self, {time=250,x=self.x + knockbackAmt, y=self.y + knockbackAmt})
-					timer.performWithDelay(1000, other )
 				elseif other.y > self.y then
 					transition.to( self, {time=250,x=self.x + knockbackAmt, y=self.y - knockbackAmt})
-					timer.performWithDelay(1000, other )
 				end
 			elseif other.x > self.x then
 				if other.y < self.y then
 					transition.to( self, {time=250,x=self.x - knockbackAmt, y=self.y + knockbackAmt})
-					timer.performWithDelay(1000, other )
 				elseif other.y > self.y then
 					transition.to( self, {time=250,x=self.x - knockbackAmt, y=self.y - knockbackAmt})
-					timer.performWithDelay(1000, other )
 				end
 			else
 				if other.y < self.y then
 					transition.to( self, {time=250,x=self.x, y=self.y + knockbackAmt})
-					timer.performWithDelay(1000, other )
 				elseif other.y > self.y then
 					transition.to( self, {time=250,x=self.x, y=self.y - knockbackAmt})
-					timer.performWithDelay(1000, other )
 				end
 			end
 		end
@@ -403,9 +397,11 @@ attack = false
 				local obj2 = event.object2
 				if( obj1.myName == "player" and obj2.myName == "Enemy") then
 					minusHealth(obj2.damage)
+					transition.cancel(obj2)
 					knockback( obj1, obj2, 80)
 				elseif ( obj1.myName == "player" and obj2.myName == "hero") then
 					minusHealth(obj1.damage)
+					transition.cancel(obj1)
 					knockback( obj2, obj1, 80)
 				
 				elseif (obj1.myName == "weapon" and obj2.myName == "Enemy") then
