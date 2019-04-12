@@ -66,9 +66,9 @@ function scene:show( event )
     menu_settings.x = display.contentHeight + 50
     menu_settings.y = display.contentHeight -100
 
-    -- local credits = display.newImage(sceneGroup, "credits.png" )
-    -- credits.x = display.contentCenterX - 950
-    -- credits.y = display.contentHeight - 100
+  	local credits = display.newImage(sceneGroup, "credits.png" )
+  	credits.x = display.contentCenterX - 950
+    credits.y = display.contentHeight - 100
 
     menu_settings:addEventListener( "tap", goToSettings )
     menu_tap_to_play:addEventListener( "tap", goToGame )
