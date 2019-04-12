@@ -75,7 +75,7 @@ function scene:show( event )
         
   		function attackSense() 
   			display.remove(attackSensor)
-  			attackSensor = display.newImageRect(sceneGroup, "Sprites/char.png", 90, 120 )
+  			attackSensor = display.newImageRect(sceneGroup, "Sprites/char.png", 85, 115 )
   			physics.addBody(attackSensor, "static" ,{isSensor=true})
   			attackSensor.isVisible = false
   			if dir == 8 then 
@@ -365,30 +365,30 @@ attack = false
 		end
 		timer.performWithDelay( 3000 , function() lookForPlayer() end )
 		
-		function knockback( self, other )
+		function knockback( self, other, knockbackAmt )
 			transition.cancel(other)
 			if other.x < self.x then
 				if other.y < self.y then
-					transition.to( self, {time=250,x=self.x + 100, y=self.y + 100})
+					transition.to( self, {time=250,x=self.x + knockbackAmt, y=self.y + knockbackAmt})
 					timer.performWithDelay(1000, other )
 				elseif other.y > self.y then
-					transition.to( self, {time=250,x=self.x + 100, y=self.y - 100})
+					transition.to( self, {time=250,x=self.x + knockbackAmt, y=self.y - knockbackAmt})
 					timer.performWithDelay(1000, other )
 				end
 			elseif other.x > self.x then
 				if other.y < self.y then
-					transition.to( self, {time=250,x=self.x - 100, y=self.y + 100})
+					transition.to( self, {time=250,x=self.x - knockbackAmt, y=self.y + knockbackAmt})
 					timer.performWithDelay(1000, other )
 				elseif other.y > self.y then
-					transition.to( self, {time=250,x=self.x - 100, y=self.y - 100})
+					transition.to( self, {time=250,x=self.x - knockbackAmt, y=self.y - knockbackAmt})
 					timer.performWithDelay(1000, other )
 				end
 			else
 				if other.y < self.y then
-					transition.to( self, {time=250,x=self.x, y=self.y + 100})
+					transition.to( self, {time=250,x=self.x, y=self.y + knockbackAmt})
 					timer.performWithDelay(1000, other )
 				elseif other.y > self.y then
-					transition.to( self, {time=250,x=self.x, y=self.y - 100})
+					transition.to( self, {time=250,x=self.x, y=self.y - knockbackAmt})
 					timer.performWithDelay(1000, other )
 				end
 			end
@@ -403,24 +403,31 @@ attack = false
 				local obj2 = event.object2
 				if( obj1.myName == "player" and obj2.myName == "Enemy") then
 					minusHealth(obj2.damage)
-					knockback( obj1, obj2 )
+					knockback( obj1, obj2, 80)
 				elseif ( obj1.myName == "player" and obj2.myName == "hero") then
 					minusHealth(obj1.damage)
-					knockback( obj2, obj1 )
+					knockback( obj2, obj1, 80)
 				
 				elseif (obj1.myName == "weapon" and obj2.myName == "Enemy") then
 					if attack == true then
-						timer.performWithDelay(1500 , function() obj2.health = obj2.health - 20 end )
 					    if obj1.health <= 0 then
 					    	display.remove(obj2)
-					    end
+					    else
+					    	timer.performWithDelay(1500, function() obj2.health = obj2.health - 25 end )
+					    	transition.cancel(obj2)
+					    	knockback( ob2, obj1, 40)
+					  	end
 					end
 					attack = false
 				elseif( obj1.myName == "Enemy" and obj2.myName == "weapon" ) then
 					if attack == true then
-						timer.performWithDelay(1500, function() obj1.health = obj1.health - 20 end )
+						timer.performWithDelay(1500, function() obj1.health = obj1.health - 25 end )
 						 if obj1.health <= 0 then 
 						 	display.remove(obj1) 
+						 else
+						 	timer.performWithDelay(1500, function() obj1.health = obj1.health - 25 end )
+						 	transition.cancel(obj1)
+						 	knockback( obj1, obj2, 40)
 						 end
 					end
 					attack = false
