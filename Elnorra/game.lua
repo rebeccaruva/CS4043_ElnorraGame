@@ -63,14 +63,54 @@ function scene:show( event )
         physics.setDrawMode("hybrid")
         physics.setGravity( 0,0)
         
-        charImage = display.newImageRect(sceneGroup, "Sprites/char.png", 50, 50)
+        charImage = display.newImageRect(sceneGroup, "Sprites/char.png", 70, 100)
         charImage.x = 500
         charImage.y = 500
         physics.addBody( charImage, "dynamic")
         charImage.isFixedRotation = true
         charImage.myName = "player"
         
-        Enemies = {}
+        xA = charImage.x
+        yA = charImage.y
+        
+  		function attackSense() 
+  			display.remove(attackSensor)
+  			attackSensor = display.newImageRect(sceneGroup, "Sprites/char.png", 90, 120 )
+  			physics.addBody(attackSensor, "static" ,{isSensor=true})
+  			attackSensor.isVisible = false
+  			if dir == 8 then 
+	  			attackSensor.x = charImage.x
+	  			attackSensor.y = charImage.y - 50
+	  			xA = charImage.x
+	  			yA = charImage.y - 50
+	  		elseif dir == 6 then
+	  			attackSensor.x = charImage.x + 50
+	  			attackSensor.y = charImage.y
+	  			xA = charImage.x + 50
+	  			yA = charImage.y
+	  		elseif dir == 4 then
+	  			attackSensor.x = charImage.x - 50
+	  			attackSensor.y = charImage.y
+	  			xA = charImage.x - 50
+	  			yA = charImage.y
+	  		elseif dir == 2 then
+	  			attackSensor.x = charImage.x
+	  			attackSensor.y = charImage.y + 50
+	  			xA = charImage.x
+	  			yA = charImage.y + 50
+	  		else
+	  			attackSensor.x = xA
+	  			attackSensor.y = yA
+	  		end
+	        attackSensor.myName = "weapon"
+	        attackSensor.isFixedRotation = true
+  		end
+ 
+Runtime:addEventListener("enterFrame",  attackSense )
+  		
+Enemies = {}
+
+attack = false
 
 ----------------------
 -----
@@ -114,7 +154,7 @@ function scene:show( event )
         -----
         ----------------------
         -- direction ad speed variables
-        local dir = 0 --n8 is up, 4 is left, 2 is down, 6 is right ( like numpad )
+        dir = 0 --n8 is up, 4 is left, 2 is down, 6 is right ( like numpad )
         local speed = 2 -- can be changed in other parts of code if needed
 
         -- every frame move (or dont move) the character depending on dir
@@ -145,6 +185,7 @@ function scene:show( event )
           -- if no buttons are pressed then stop moving
           if(buttonPressed == false) then
             dir = 0
+            attack = false
           end
 
           -- each button move the player either up/down or left/right
@@ -164,7 +205,12 @@ function scene:show( event )
             if(buttonPressed == true) then
               dir = 6
             end
-          end
+           end
+          if (event.keyName == "c") then
+		    if(buttonPressed == true) then
+		    	attack = true
+		    end
+		  end
         end
 
         -- listen for key input from user
@@ -361,11 +407,30 @@ function scene:show( event )
 				elseif ( obj1.myName == "player" and obj2.myName == "hero") then
 					minusHealth(obj1.damage)
 					knockback( obj2, obj1 )
+				
+				elseif (obj1.myName == "weapon" and obj2.myName == "Enemy") then
+					if attack == true then
+						timer.performWithDelay(1500 , function() obj2.health = obj2.health - 20 end )
+					    if obj1.health <= 0 then
+					    	display.remove(obj2)
+					    end
+					end
+					attack = false
+				elseif( obj1.myName == "Enemy" and obj2.myName == "weapon" ) then
+					if attack == true then
+						timer.performWithDelay(1500, function() obj1.health = obj1.health - 20 end )
+						 if obj1.health <= 0 then 
+						 	display.remove(obj1) 
+						 end
+					end
+					attack = false
 				end
 			end
 		end
 			
 		Runtime:addEventListener( "collision", enemyCollisions )
+		
+		
 		
 		
 
