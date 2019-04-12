@@ -81,7 +81,7 @@ function scene:show( event )
 
         local physics = require ("physics")
         physics.start()
-        physics.setDrawMode("hybrid")
+        --physics.setDrawMode("hybrid")
         physics.setGravity( 0,0)
 
         -- Set up display groups
@@ -94,12 +94,61 @@ function scene:show( event )
         healthBar.y = display.contentCenterY-535
         local healthText = display.newText( healthScore, -200, 100, native.systemFont, 60)
 
-        charImage = display.newImageRect(charGroup, "Sprites/char.png", 50, 50)
+        charImage = display.newImageRect(charGroup, "Sprites/hero.png", 70, 100)
         charImage.x = 500
         charImage.y = 500
         physics.addBody( charImage, "dynamic")
         charImage.isFixedRotation = true
         charImage.myName = "player"
+
+        -- ----------some Sprites sheets --------
+        --
+        -- -- Config img sheet
+        -- local sheetChair =
+        -- {
+        --   frames =
+        --   { -- !!! The order in which you declare each image within a sheet is very important — later, when you load an image from a sheet using a command such as display.newImageRect(), you'll need to specify the number of the frame based on the order in which it was declared in the sheet configuration. !!!
+        --         {   -- 1) front
+        --             x=0,
+        --             y = 0,
+        --             width = 24,
+        --             height = 32,
+        --         },
+        --         { -- 2) back
+        --           x = 32,
+        --           y = 6, -- apres height ast1
+        --           width = 24,
+        --           height = 26,
+        --         },
+        --         {   -- 3) ToTheRight
+        --             x = 3,
+        --             y = 32,
+        --             width = 20,
+        --             height = 31
+        --         },
+        --         {   -- 4) ToTheLeft
+        --             x = 35,
+        --             y = 32,
+        --             width = 20,
+        --             height = 31
+        --         },
+        --       },
+        -- }
+        -- local chairObjectSheet = graphics.newImageSheet("furnitures/chairs.png", sheetChair)
+
+        --load the filter
+        local filter = display.newImageRect(uiGroup, "filter.png", 1280*2, 720*2)
+        filter.x = display.contentCenterX
+        filter.y = display.contentCenterY
+        filter.alpha = 0
+
+        -- show item to collect
+        local item1 = display.newImageRect(uiGroup, "item.png", 175, 175)
+        item1.x = 750
+        item1.y = 400
+        item1.alpha = 0
+
+        -----------------------------------------
 
         ----------------------
         -----
@@ -152,7 +201,7 @@ function scene:show( event )
         -- if patrol is set it sets which corner to start the square or the line from
 
         function createEnemy( x, y, speed, health, damage, follow, patrol, pathx, pathy, pathCounter )
-          local newEnemy =  display.newImageRect(charGroup, "Sprites/char.png", 50, 50)
+          local newEnemy =  display.newImageRect(charGroup, "Sprites/boo.png", 50, 50)
           physics.addBody( newEnemy, "dynamic",{ density = 1000 ,bounce = 0})
           newEnemy.isFixedRotation = true
           newEnemy.x = x
@@ -307,102 +356,150 @@ function scene:show( event )
         roomList.wallList = {}
         roomList.doorList = {}
         roomList.enemyList = {}
+        roomList.decorList = {}
+        roomList.itemList = {}
 
+
+
+        -- ROOM 1 - KIDS ROOM
+        --Walls--------------
         roomList.wallList[1] = {}
         roomList.wallList[1][1] = {}
-        roomList.wallList[1][1].x = 405
-        roomList.wallList[1][1].y = 350
+        roomList.wallList[1][1].x = 5
+        roomList.wallList[1][1].y = 550
         roomList.wallList[1][1].width = 14
-        roomList.wallList[1][1].height = 700
+        roomList.wallList[1][1].height = 1000
 
         roomList.wallList[1][2] = {}
-        roomList.wallList[1][2].x = 890
-        roomList.wallList[1][2].y = 350
+        roomList.wallList[1][2].x = 740
+        roomList.wallList[1][2].y = 550
         roomList.wallList[1][2].width = 14
-        roomList.wallList[1][2].height = 700
+        roomList.wallList[1][2].height = 1000
 
         roomList.wallList[1][3] = {}
-        roomList.wallList[1][3].x = 650
-        roomList.wallList[1][3].y = 135
-        roomList.wallList[1][3].width = 500
+        roomList.wallList[1][3].x = 380
+        roomList.wallList[1][3].y = 230
+        roomList.wallList[1][3].width = 750
         roomList.wallList[1][3].height = 14
 
         roomList.wallList[1][4] = {}
-        roomList.wallList[1][4].x = 495
-        roomList.wallList[1][4].y = 717
-        roomList.wallList[1][4].width = 200
-        roomList.wallList[1][4].height = 100
+        roomList.wallList[1][4].x = 145
+        roomList.wallList[1][4].y = 1100
+        roomList.wallList[1][4].width = 300
+        roomList.wallList[1][4].height = 160
 
         roomList.wallList[1][5] = {}
-        roomList.wallList[1][5].x = 797
-        roomList.wallList[1][5].y = 717
-        roomList.wallList[1][5].width = 200
-        roomList.wallList[1][5].height = 100
+        roomList.wallList[1][5].x = 590
+        roomList.wallList[1][5].y = 1100
+        roomList.wallList[1][5].width = 300
+        roomList.wallList[1][5].height = 160
 
-        roomList.wallList[2] = {}
-        roomList.wallList[2][1] = {}
-        roomList.wallList[2][1].x = 268
-        roomList.wallList[2][1].y = 325
-        roomList.wallList[2][1].width = 70
-        roomList.wallList[2][1].height = 425
-
-        roomList.wallList[2][2] = {}
-        roomList.wallList[2][2].x = 1112
-        roomList.wallList[2][2].y = 475
-        roomList.wallList[2][2].width = 14
-        roomList.wallList[2][2].height = 790
-
-        roomList.wallList[2][3] = {}
-        roomList.wallList[2][3].x = 473
-        roomList.wallList[2][3].y = 220
-        roomList.wallList[2][3].width = 365
-        roomList.wallList[2][3].height = 14
-
-        roomList.wallList[2][4] = {}
-        roomList.wallList[2][4].x = 547
-        roomList.wallList[2][4].y = 937
-        roomList.wallList[2][4].width = 550
-        roomList.wallList[2][4].height = 120
-
-        roomList.wallList[2][5] = {}
-        roomList.wallList[2][5].x = 1025
-        roomList.wallList[2][5].y = 937
-        roomList.wallList[2][5].width = 200
-        roomList.wallList[2][5].height = 120
-
-        roomList.wallList[2][6] = {}
-        roomList.wallList[2][6].x = 940
-        roomList.wallList[2][6].y = 220
-        roomList.wallList[2][6].width = 365
-        roomList.wallList[2][6].height = 14
-
-        roomList.wallList[2][7] = {}
-        roomList.wallList[2][7].x = 268
-        roomList.wallList[2][7].y = 820
-        roomList.wallList[2][7].width = 70
-        roomList.wallList[2][7].height = 350
-
+        --Doors ----------
         roomList.doorList = {}
         roomList.doorList[1] = {}
         roomList.doorList[1][1] = {}
-        roomList.doorList[1][1].x = 645
-        roomList.doorList[1][1].y = 735
-        roomList.doorList[1][1].width = 90
-        roomList.doorList[1][1].height = 60
+        roomList.doorList[1][1].x = 365
+        roomList.doorList[1][1].y = 1135
+        roomList.doorList[1][1].width = 110
+        roomList.doorList[1][1].height = 80
         roomList.doorList[1][1].teleportTo = 2
-        roomList.doorList[1][1].playerX = 500
-        roomList.doorList[1][1].playerY = 450
+        roomList.doorList[1][1].playerX = 460
+        roomList.doorList[1][1].playerY = 400
 
-        roomList.doorList[2] = {}
-        roomList.doorList[2][1] = {}
-        roomList.doorList[2][1].x = 750
-        roomList.doorList[2][1].y = 900
-        roomList.doorList[2][1].width = 90
-        roomList.doorList[2][1].height = 60
-        roomList.doorList[2][1].teleportTo = 1
-        roomList.doorList[2][1].playerX = 500
-        roomList.doorList[2][1].playerY = 400
+        --Decor------
+        roomList.decorList = {}
+        roomList.decorList[1] = {}
+        roomList.decorList[1][1] = {}
+        roomList.decorList[1][1].x = 600
+        roomList.decorList[1][1].y = 550
+        roomList.decorList[1][1].width = 90
+        roomList.decorList[1][1].height = 140
+        roomList.decorList[1][1].myName = "simpleBed"
+        roomList.decorList[1][1].linkedImg = "furnitures/bedGr.png"
 
+        roomList.decorList[1][2] = {}
+        roomList.decorList[1][2].x = 170
+        roomList.decorList[1][2].y = 830
+        roomList.decorList[1][2].width = 90
+        roomList.decorList[1][2].height = 140
+        roomList.decorList[1][2].myName = "simpleBed"
+        roomList.decorList[1][2].linkedImg = "furnitures/bedS.png"
+
+        roomList.decorList[1][3] = {}
+        roomList.decorList[1][3].x = 520
+        roomList.decorList[1][3].y = 520
+        roomList.decorList[1][3].width = 65
+        roomList.decorList[1][3].height = 60
+        roomList.decorList[1][3].myName = "nightstand"
+        roomList.decorList[1][3].linkedImg = "furnitures/nightstand.png"
+
+        roomList.decorList[1][4] = {}
+        roomList.decorList[1][4].x = 76
+        roomList.decorList[1][4].y = 283
+        roomList.decorList[1][4].width = 120
+        roomList.decorList[1][4].height = 140
+        roomList.decorList[1][4].myName = "lib"
+        roomList.decorList[1][4].linkedImg = "furnitures/librairy.png"
+
+        roomList.decorList[1][5] = {}
+        roomList.decorList[1][5].x = 220
+        roomList.decorList[1][5].y = 313
+        roomList.decorList[1][5].width = 150
+        roomList.decorList[1][5].height = 80
+        roomList.decorList[1][5].myName = "dresser"
+        roomList.decorList[1][5].linkedImg = "furnitures/dresser.png"
+
+        roomList.decorList[1][6] = {}
+        roomList.decorList[1][6].x = 400
+        roomList.decorList[1][6].y = 283
+        roomList.decorList[1][6].width = 120
+        roomList.decorList[1][6].height = 140
+        roomList.decorList[1][6].myName = "dresser"
+        roomList.decorList[1][6].linkedImg = "furnitures/dresser2.png"
+
+        roomList.decorList[1][7] = {}
+        roomList.decorList[1][7].x = 550
+        roomList.decorList[1][7].y = 283
+        roomList.decorList[1][7].width = 120
+        roomList.decorList[1][7].height = 140
+        roomList.decorList[1][7].myName = "bookshelf"
+        roomList.decorList[1][7].linkedImg = "furnitures/d-bookshelf-brown.png"
+
+        roomList.decorList[1][8] = {}
+        roomList.decorList[1][8].x = 670
+        roomList.decorList[1][8].y = 283
+        roomList.decorList[1][8].width = 120
+        roomList.decorList[1][8].height = 140
+        roomList.decorList[1][8].myName = "bookshelf"
+        roomList.decorList[1][8].linkedImg = "furnitures/bookshelf-brown.png"
+
+        --Items (pickable)---------
+        roomList.itemList[1] = {}
+        roomList.itemList[1][1] = {}
+        roomList.itemList[1][1].x = 300
+        roomList.itemList[1][1].y = 650
+        roomList.itemList[1][1].width = 45
+        roomList.itemList[1][1].height = 55
+        roomList.itemList[1][1].myName = "toy"
+        roomList.itemList[1][1].linkedImg = "furnitures/toy3.png"
+
+        roomList.itemList[1][2] = {}
+        roomList.itemList[1][2].x = 360
+        roomList.itemList[1][2].y = 670
+        roomList.itemList[1][2].width = 55
+        roomList.itemList[1][2].height = 45
+        roomList.itemList[1][2].myName = "toy"
+        roomList.itemList[1][2].linkedImg = "furnitures/toy2.2.png"
+
+        roomList.itemList[1][3] = {}
+        roomList.itemList[1][3].x = 50
+        roomList.itemList[1][3].y = 990
+        roomList.itemList[1][3].width = 55
+        roomList.itemList[1][3].height = 55
+        roomList.itemList[1][3].myName = "toy"
+        roomList.itemList[1][3].linkedImg = "furnitures/toy4.png"
+
+        --Ennemies------------
         roomList.enemyList[1] = {}
         roomList.enemyList[1][1] = {}
         roomList.enemyList[1][1].x = 500
@@ -428,9 +525,120 @@ function scene:show( event )
         roomList.enemyList[1][2].pathy = 60
         roomList.enemyList[1][2].pathCounter = 1
 
+
+        --ROOM 2 --- LIVINGROOM
+        -- Walls---------------
+        roomList.wallList[2] = {}
+        roomList.wallList[2][1] = {}
+        roomList.wallList[2][1].x = -200
+        roomList.wallList[2][1].y = 290
+        roomList.wallList[2][1].width = 125
+        roomList.wallList[2][1].height = 600
+
+        roomList.wallList[2][2] = {}
+        roomList.wallList[2][2].x = 1060
+        roomList.wallList[2][2].y = 595
+        roomList.wallList[2][2].width = 14
+        roomList.wallList[2][2].height = 1200
+
+        roomList.wallList[2][3] = {}
+        roomList.wallList[2][3].x = 93
+        roomList.wallList[2][3].y = 220
+        roomList.wallList[2][3].width = 600
+        roomList.wallList[2][3].height = 14
+
+        roomList.wallList[2][4] = {}
+        roomList.wallList[2][4].x = 185
+        roomList.wallList[2][4].y = 1238
+        roomList.wallList[2][4].width = 900
+        roomList.wallList[2][4].height = 120
+
+        roomList.wallList[2][5] = {}
+        roomList.wallList[2][5].x = 928
+        roomList.wallList[2][5].y = 1238
+        roomList.wallList[2][5].width = 300
+        roomList.wallList[2][5].height = 120
+
+        roomList.wallList[2][6] = {}
+        roomList.wallList[2][6].x = 820
+        roomList.wallList[2][6].y = 220
+        roomList.wallList[2][6].width = 600
+        roomList.wallList[2][6].height = 14
+
+        roomList.wallList[2][7] = {}
+        roomList.wallList[2][7].x = -200
+        roomList.wallList[2][7].y = 1008
+        roomList.wallList[2][7].width = 125
+        roomList.wallList[2][7].height = 350
+
+        --Doors----------------
+        roomList.doorList[2] = {}
+        roomList.doorList[2][1] = {}
+        roomList.doorList[2][1].x = 460
+        roomList.doorList[2][1].y = 180
+        roomList.doorList[2][1].width = 100
+        roomList.doorList[2][1].height = 80
+        roomList.doorList[2][1].teleportTo = 1
+        roomList.doorList[2][1].playerX = 365
+        roomList.doorList[2][1].playerY = 1000
+
+        -- roomList.doorList[2][2] = {}
+        -- roomList.doorList[2][2].x = 710
+        -- roomList.doorList[2][2].y = 1288
+        -- roomList.doorList[2][2].width = 150
+        -- roomList.doorList[2][2].height = 100
+        -- roomList.doorList[2][2].teleportTo = 1
+        -- roomList.doorList[2][2].playerX = 500
+        -- roomList.doorList[2][2].playerY = 400
+
+        --Decor------
+        roomList.decorList[2] = {}
+        roomList.decorList[2][4] = {}
+        roomList.decorList[2][4].x = 800
+        roomList.decorList[2][4].y = 900
+        roomList.decorList[2][4].width = 180
+        roomList.decorList[2][4].height = 180
+        roomList.decorList[2][4].myName = "table"
+        roomList.decorList[2][4].linkedImg = "furnitures/tableR.png"
+
+        roomList.decorList[2][2] = {}
+        roomList.decorList[2][2].x = 650
+        roomList.decorList[2][2].y = 920
+        roomList.decorList[2][2].width = 75
+        roomList.decorList[2][2].height = 95
+        roomList.decorList[2][2].myName = "chair"
+        roomList.decorList[2][2].linkedImg = "furnitures/rightCh.png"
+
+        roomList.decorList[2][3] = {}
+        roomList.decorList[2][3].x = 950
+        roomList.decorList[2][3].y = 920
+        roomList.decorList[2][3].width = 80
+        roomList.decorList[2][3].height = 95
+        roomList.decorList[2][3].myName = "chair"
+        roomList.decorList[2][3].linkedImg = "furnitures/lefttCh.png"
+
+        roomList.decorList[2][1] = {}
+        roomList.decorList[2][1].x = 800
+        roomList.decorList[2][1].y = 790
+        roomList.decorList[2][1].width = 75
+        roomList.decorList[2][1].height = 90
+        roomList.decorList[2][1].myName = "chair"
+        roomList.decorList[2][1].linkedImg = "furnitures/frontCh.png"
+
+        --Items (pickable)---------
+        roomList.itemList[2] = {}
+        roomList.itemList[2][1] = {}
+        roomList.itemList[2][1].x = 300
+        roomList.itemList[2][1].y = 650
+        roomList.itemList[2][1].width = 15
+        roomList.itemList[2][1].height = 45
+        roomList.itemList[2][1].myName = "pen"
+        roomList.itemList[2][1].linkedImg = "furnitures/pen.png"
+
+        --Enemies ------------------
         roomList.enemyList[2] = {}
         roomList.enemyList[2][1] = {}
-        roomList.enemyList[2][1].x = 500
+        roomList.enemyList[2][1].x = 250
         roomList.enemyList[2][1].y = 700
         roomList.enemyList[2][1].speed = 400
         roomList.enemyList[2][1].health = 4
@@ -489,7 +697,32 @@ function scene:show( event )
             physics.addBody(door, "static")
             door.myName = "door"
             currentRoom[totalItems] = door
-            --totalDoors = totalDoors+1
+            totalItems = totalItems+1
+            i = i+1
+          end
+          local roomDecor = roomList.decorList[lvlNumber]
+          local i = 1
+          while (roomList.decorList[lvlNumber][i] ~= nil) do
+            local decorInfo = roomList.decorList[lvlNumber][i]
+            decor = display.newImageRect(charGroup, ""..decorInfo.linkedImg, decorInfo.width, decorInfo.height)
+            decor.x = decorInfo.x
+            decor.y = decorInfo.y
+            physics.addBody(decor, "static")
+            decor.myName = decorInfo.myName
+            currentRoom[totalItems] = decor
+            totalItems = totalItems+1
+            i = i+1
+          end
+          local roomItems = roomList.itemList[lvlNumber]
+          local i = 1
+          while (roomList.itemList[lvlNumber][i] ~= nil) do
+            local itemInfo = roomList.itemList[lvlNumber][i]
+            item = display.newImageRect(charGroup, ""..itemInfo.linkedImg, itemInfo.width, itemInfo.height)
+            item.x = itemInfo.x
+            item.y = itemInfo.y
+            --physics.addBody(decor, "static")
+            item.myName = itemInfo.myName
+            currentRoom[totalItems] = item
             totalItems = totalItems+1
             i = i+1
           end
@@ -511,15 +744,6 @@ function scene:show( event )
           local i = totalItems - 1
           while (i>=0) do
             local objInfo = currentRoom[i]
-            -- if objInfo.myName == "wall" then
-            --   wall = display.remove(wall)
-            --   physics.removeBody(wall)
-            --   i = i-1
-            -- elseif objInfo.myName == "door" then
-            --   door = display.remove(door)
-            --   physics.removeBody(door)
-            --   i = i-1
-            -- end
               display.remove(objInfo)
               physics.removeBody(objInfo)
               objInfo = nil
@@ -587,22 +811,58 @@ function scene:show( event )
         ----------------------
 
         local function changeWorld()
-          --if (backgroundBad is displayed)
-            --display.remove( backgroundBad )
-            --backgroundGood = display.newImageRect( "bgGood.png", size, size)
-            --backgroundGood.x = display.contentCenterX
-            --backgroundGood.y = display.contentCenterY
-          --end
-          --if (backgroundGood is displayed)
-            --display.remove( backgroundGood )
-            --backgroundBad = display.newImageRect( "bgBad.png", size, size)
-            --backgroundBad.x = display.contentCenterX
-            --backgroundBad.y = display.contentCenterY
-          --end
-        end
+          if(filter.alpha == 0) then
+            noFilter=true
+          else
+            noFilter=false
+          end
 
+          if(noFilter == true) then --add a filter for the imaginary world
+            filter.alpha = 0.5
+            canCollect = true
+            if (itemsLeft) then
+              item1.alpha = 1
+            end
+          elseif(noFilter == false) then --remove the filter for the real world
+            filter.alpha = 0
+            if (itemsLeft) then
+              item1.alpha = 0
+            end
+            canCollect = false;
+          end
+
+end
         -- remove display objects: https://docs.coronalabs.com/guide/media/displayObjects/index.html#removing-display-objects
         -- masking images https://docs.coronalabs.com/guide/media/imageMask/index.html
+
+
+        ----------------------
+        -----
+        -- item collection
+       -----
+       ----------------------
+
+       local function collectItem()
+           if(canCollect and itemCount < 1) then
+               -- if char.x and .y == item.x and .y (within key bounds)
+               -- then remove item and add to itemCount
+              if ((charImage.x <= (item1.x + 50)) and (charImage.x >= item1.x - 50)) then
+                if ((charImage.y >= (item1.y - 87)) and (charImage.y <= item1.y + 87)) then
+                  itemCount = itemCount + 1
+                  print(itemCount)
+                  -- item1:removeSelf()
+                  -- item1 = nil
+                  item1.alpha = 0;
+                  local printText = display.newText( "You win!", 350, 650, native.systemFont, 200) --prints "You win!" onto the screen
+                  itemsLeft = false
+                  canCollect = false;
+                end
+              end
+            end
+          end
+
+  Runtime:addEventListener( "enterFrame", collectItem)
+
 
         ----------------------
         -----
@@ -612,18 +872,18 @@ function scene:show( event )
 
         -- direction and speed variables
         local dir = 0 --n8 is up, 4 is left, 2 is down, 6 is right ( like numpad )
-        local speed = 2 -- can be changed in other parts of code if needed
+        local speed = 8 -- can be changed in other parts of code if needed
 
         -- every frame move (or dont move) the character depending on dir
         local function moveChar()
           if(dir == 8) then
-            charImage.y = charImage.y - 4
+            charImage.y = charImage.y - 8
           elseif(dir == 4) then
-            charImage.x = charImage.x - 4
+            charImage.x = charImage.x - 8
           elseif (dir == 2) then
-            charImage.y = charImage.y + 4
+            charImage.y = charImage.y + 8
           elseif(dir == 6) then
-            charImage.x = charImage.x + 4
+            charImage.x = charImage.x + 8
           end
         end
 
@@ -642,6 +902,13 @@ function scene:show( event )
           -- if no buttons are pressed then stop moving
           if(buttonPressed == false) then
             dir = 0
+          end
+
+          -- space change filter
+          if(event.keyName == "space") then
+            if(buttonPressed == true) then
+              changeWorld()
+            end
           end
 
           -- each button move the player either up/down or left/right
